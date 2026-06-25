@@ -7,6 +7,7 @@ import { useStore } from '../store';
 
 export const TextNode = ({ id, data, selected }) => {
   const updateNodeField = useStore((state) => state.updateNodeField);
+  const cleanNodeEdges = useStore((state) => state.cleanNodeEdges);
   const [currText, setCurrText] = useState(data?.text || '{{input}}');
   const [variables, setVariables] = useState([]);
   const textareaRef = useRef(null);
@@ -42,8 +43,14 @@ export const TextNode = ({ id, data, selected }) => {
     const vars = getVariables(currText);
     setVariables(vars);
     updateNodeField(id, 'text', currText);
+
+    // Clean up orphaned edges for handles that no longer exist
+    const validHandleIds = vars.map((v) => `${id}-${v}`);
+    cleanNodeEdges(id, validHandleIds);
+
     adjustSize();
-  }, [id, currText]);
+  }, [id, currText, cleanNodeEdges, updateNodeField]);
+
 
   const handleTextChange = (e) => {
     setCurrText(e.target.value);

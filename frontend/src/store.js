@@ -46,6 +46,18 @@ export const useStore = create((set, get) => ({
         edges: get().edges.filter((edge) => edge.source !== nodeId && edge.target !== nodeId),
       });
     },
+    cleanNodeEdges: (nodeId, validTargetHandleIds) => {
+      set({
+        edges: get().edges.filter((edge) => {
+          if (edge.target === nodeId) {
+            // Keep the edge only if its targetHandle is in the list of valid handles
+            return validTargetHandleIds.includes(edge.targetHandle);
+          }
+          return true;
+        }),
+      });
+    },
+
     updateNodeField: (nodeId, fieldName, fieldValue) => {
       set({
         nodes: get().nodes.map((node) => {
