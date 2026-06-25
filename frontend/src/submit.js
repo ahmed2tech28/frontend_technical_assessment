@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useStore } from './store';
 import { Modal } from './components/Modal';
+import api from './api';
 
 export const SubmitButton = () => {
   const nodes = useStore((state) => state.nodes);
@@ -17,22 +18,12 @@ export const SubmitButton = () => {
     setError(null);
     setData(null);
     try {
-      const response = await fetch('http://localhost:8000/pipelines/parse', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ nodes, edges }),
-      });
-      if (!response.ok) {
-        throw new Error(`Server responded with status ${response.status}`);
-      }
-      const result = await response.json();
-      setData(result);
+      const response = await api.post('/pipelines/parse', { nodes, edges });
+      setData(response.data);
       setIsOpen(true);
     } catch (err) {
       console.error(err);
-      setError(err.message || 'Could not connect to the backend server.');
+      setError(err.response?.data?.detail || err.message || 'Could not connect to the backend server.');
       setIsOpen(true);
     } finally {
       setLoading(false);
@@ -80,7 +71,7 @@ export const SubmitButton = () => {
       >
         {error ? (
           <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', fontSize: '13px', lineHeight: 1.5 }}>
-            {error}. Make sure the FastAPI backend is running on port 8000.
+            {error}. Make sure the FastAPI backend is running at {process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000'}.
           </p>
         ) : (
           <>
